@@ -132,7 +132,7 @@ singletons."
 
 (defun representation-iterator (representation carry cons)
   "Return a closure that sets the car of CONS to the next value each time it
-is called, calling CARRY when it reaches the end of its range."
+is called, resetting and calling CARRY when it reaches the end of its range."
   (flet ((save (value)
            (setf (car cons) value))
          (carry ()
@@ -179,10 +179,13 @@ is called, calling CARRY when it reaches the end of its range."
                                      &key index
                                           (setup 'row-major-setup))
                                     &body body)
+  "A macro for traversing representations.  Provides SUBSCRIPTS for BODY,
+using the given SETUP function.  When INDEX is given, it increases with each
+iteration, starting from 0."
   (with-unique-names (block-name next)
     `(block ,block-name
        (let+ (((&slice-iterator ,subscripts ,next)
                (,setup ,representations (lambda () (return-from ,block-name)))))
          (loop ,@(when index `(for ,index from 0))
-           do ,@body
+               do ,@body
                   (,next))))))

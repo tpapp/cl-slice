@@ -146,10 +146,10 @@ is called, resetting and calling CARRY when it reaches the end of its range."
                                  (dimension (length vector))
                                  (position 0))
                             (lambda ()
-                              (save (aref vector position))
                               (when (= (incf position) dimension)
                                 (setf position 0)
-                                (carry))))))))
+                                (carry))
+                              (save (aref vector position))))))))
 
 (defun row-major-setup (representations terminator)
   (let ((iterator terminator)

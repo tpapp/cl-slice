@@ -7,6 +7,8 @@
 
 (defsuite slice-suite ())
 
+;; (run-suite 'representation-suite)
+
 (defsuite representation-suite (slice-suite))
 
 (deffixture representation-suite (@body)
@@ -14,6 +16,9 @@
     @body))
 
 (deftest test-representation (representation-suite)
-  (assert-equalp (slice vec10 1) 1)
-  (assert-equalp (slice vec10 -1) 9)
-  (assert-equalp (slice vec10 (cons 3 5)) #(3 4)))
+  (assert-equalp 1 (slice vec10 1))
+  (assert-equalp 9 (slice vec10 -1))
+  (assert-equalp #(3 4) (slice vec10 (cons 3 5)))
+  (assert-equalp #(7 8 9) (slice vec10 (cons 7 nil)))
+  (assert-equalp #(7 8) (slice vec10 (cons 7 -1)))
+  (assert-equalp #(2 3 5) (slice vec10 #(2 3 5))))

@@ -8,4 +8,4 @@
                #:let-plus
                #:optima)
   :serial t
-  :components ((:file "cl-slice")))
+  :components ((:file "cl-slice-dev")))

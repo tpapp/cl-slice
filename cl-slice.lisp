@@ -28,13 +28,22 @@
 ;;; implementation for arrays
 
 (defmethod slice ((array array) &rest slices)
-  (let ((representations (canonical-representations (array-dimensions array)
-                                                    slices)))
-    (aprog1 (make-array (representation-dimensions representations)
-                        :element-type (array-element-type array))
-      (traverse-representations (subscripts representations :index index)
-        (setf (row-major-aref it index)
-              (apply #'aref array subscripts))))))
+  (declare (optimize debug))
+  (let* ((representations (canonical-representations (array-dimensions array)
+                                                     slices))
+         (dimensions (representation-dimensions representations)))
+    (if dimensions
+        (aprog1 (make-array dimensions
+                            :element-type (array-element-type array))
+          (traverse-representations (subscripts representations :index index)
+            (setf (row-major-aref it index)
+                  (apply #'aref array subscripts))))
+        (apply #'aref array representations))))
+
+(traverse-representations (subscripts (list (canonical-range 0 2)))
+  (print subscripts))
+
+(row-major-setup (list (canonical-range 0 2)) (lambda ()))
 
 (defmethod (setf slice) ((value array) (array array) &rest slices)
   (let ((representations (canonical-representations (array-dimensions array)

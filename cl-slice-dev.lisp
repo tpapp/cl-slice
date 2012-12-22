@@ -13,9 +13,6 @@
    #:representation-dimensions
    #:row-major-setup
    #:column-major-setup
-   #:iterator-over-representations
-   #:loop-over-representations
-   #:&slice-iterator
    #:traverse-representations))
 
 (in-package #:cl-slice-dev)
@@ -168,13 +165,6 @@ is called, resetting and calling CARRY when it reaches the end of its range."
           (row-major-setup (reverse representations) terminator)))
     (values (nreverse subscripts) iterator)))
 
-(define-let+-expansion (&slice-iterator (subscripts next)
-                        :value-var value :body-var body)
-  (with-unique-names (next-var)
-    `(let+ (((&values ,subscripts ,next-var) ,value)
-            ((&flet ,next () (funcall ,next-var))))
-       ,@body)))
-
 (defmacro traverse-representations ((subscripts representations
                                      &key index
                                           (setup 'row-major-setup))
@@ -184,8 +174,8 @@ using the given SETUP function.  When INDEX is given, it increases with each
 iteration, starting from 0."
   (with-unique-names (block-name next)
     `(block ,block-name
-       (let+ (((&slice-iterator ,subscripts ,next)
+       (let+ (((&values ,subscripts ,next)
                (,setup ,representations (lambda () (return-from ,block-name)))))
          (loop ,@(when index `(for ,index from 0))
                do ,@body
-                  (,next))))))
+                  (funcall ,next))))))

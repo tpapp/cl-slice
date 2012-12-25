@@ -3,7 +3,7 @@
 
 
 (cl:defpackage #:cl-slice
-  (:use #:cl #:anaphora #:cl-slice-dev #:let-plus)
+  (:use #:cl #:alexandria #:anaphora #:cl-slice-dev #:let-plus)
   (:export
    #:slice
    #:ref
@@ -40,7 +40,7 @@
   (let+ (((&structure-r/o including- start end) slice)
          (start (canonical-representation axis start))
          (end (canonical-representation axis end)))
-    (canonical-range start (1- end))))
+    (canonical-range start (1+ end))))
 
 (defstruct nodrop
   "Select a single index, but don't drop a dimension."
@@ -54,12 +54,15 @@
   (let ((start (canonical-representation axis (nodrop-index slice))))
     (canonical-range start (1+ start))))
 
-(defun head (index)
-  "Slice up to INDEX."
-  (cons 0 index))
+(defun head (count)
+  "First COUNT indexes."
+  (check-type count alexandria:array-index)
+  (cons 0 count))
 
-(defun tail (index)
-  (cons index nil))
+(defun tail (count)
+  "Last COUNT indexes."
+  (check-type count alexandria:array-index)
+  (cons (- count) nil))
 
 
 

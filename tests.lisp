@@ -36,6 +36,12 @@
   (assert-condition error (slice vec10 #*00)) ; too short
   )
 
+(deftest test-convenience-forms (representation-suite)
+  (assert-equalp #(3 4 5) (slice vec10 (including 3 5)))
+  (assert-equalp #(5) (slice vec10 (nodrop 5)))
+  (assert-equalp #(0 1 2) (slice vec10 (head 3)))
+  (assert-equalp #(7 8 9) (slice vec10 (tail 3))))
+
 (defsuite array-suite (slice-suite))
 
 (deffixture array-suite (@body)

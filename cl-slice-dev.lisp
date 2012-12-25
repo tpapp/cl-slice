@@ -12,7 +12,6 @@
    #:all-singleton-representations?
    #:representation-dimensions
    #:row-major-setup
-   #:column-major-setup
    #:traverse-representations))
 
 (in-package #:cl-slice-dev)
@@ -163,10 +162,11 @@ is called, resetting and calling CARRY when it reaches the end of its range."
                    (representation-iterator r iterator cons)))
     (values subscripts iterator)))
 
-(defun column-major-setup (representations terminator)
-  (let+ (((&values subscripts iterator)
-          (row-major-setup (reverse representations) terminator)))
-    (values (nreverse subscripts) iterator)))
+;;; NOTE commented out as untested
+;; (defun column-major-setup (representations terminator)
+;;   (let+ (((&values subscripts iterator)
+;;           (row-major-setup (reverse representations) terminator)))
+;;     (values (nreverse subscripts) iterator)))
 
 (defmacro traverse-representations ((subscripts representations
                                      &key index

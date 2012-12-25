@@ -14,14 +14,14 @@ The most frequently used form is
 #+BEGIN_SRC lisp
 (slice object slice1 slice2 ...)
 #+END_SRC
-Each slice selects a subset of subscripts along the corresponding axis.  The library supports the following slice specifications:
+Each /slice/ selects a subset of subscripts along the corresponding axis.  The library supports the following slice specifications:
 
 - a nonnegative integer selects the corresponding index, while a negative integer selects an index counting backwards from the last index:
   #+BEGIN_SRC lisp
   (slice #(0 1 2 3) 1)                  ; => 1  
   (slice #(0 1 2 3) -2)                 ; => 2    
   #+END_SRC
-  Each integer slice /drops/ the dimension: vectors become atoms, matrices become vectors, etc.
+  These are called /singleton slices/.  Each singleton slice /drops/ the dimension: vectors become atoms, matrices become vectors, etc.
 
 - =(cons start end)= selects integers $i: \text{start} \leq i < \text{end}$.  When =end= is =nil=, the last index is included (cf. =subseq=).  Each boundary is resolved according to the other rules if applicable, so you can use negative integers:
   #+BEGIN_SRC lisp
@@ -72,6 +72,8 @@ This is pretty much the core functionality --- the semantics can be extended, se
   #+END_SRC
 
 All of these are trivial to implement --- if there is something you are missing, you can easily extend =slice=.  You may also want to submit a patch!
+
+=ref= is a version of slice that always returns a single element, so it can only be used with singleton slices.
 
 * Slice semantics
 

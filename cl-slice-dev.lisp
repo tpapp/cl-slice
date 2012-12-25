@@ -86,8 +86,8 @@ AXIS.  The default methods just use dimensions as AXIS.")
                              do (collect index)))
                  (vector (map 'nil #'collect it))))
       (canonical-sequence (nreverse subscripts))))
-  (:method (axis (slice (eql t)))
-    (canonical-range 0 (axis-dimension axis)))
+  (:method ((axis integer) (slice (eql t)))
+    (canonical-range 0 axis))
   (:method (axis (slice bit-vector))
     (canonical-sequence (loop for bit across slice
                               for index from 0
@@ -139,9 +139,12 @@ is called, resetting and calling CARRY when it reaches the end of its range."
       (canonical-range (let+ (((&structure-r/o canonical-range- start end) it)
                               (slice start))
                          (lambda ()
-                           (when (= (save (incf slice)) end)
-                             (setf slice start)
-                             (carry)))))
+                           (let ((carry? (= (incf slice) end)))
+                             (when carry?
+                               (setf slice start))
+                             (save slice)
+                             (when carry?
+                               (carry))))))
       (canonical-sequence (let* ((vector (canonical-sequence-vector it))
                                  (dimension (length vector))
                                  (position 0))

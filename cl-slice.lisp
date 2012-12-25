@@ -40,11 +40,6 @@
                   (apply #'aref array subscripts))))
         (apply #'aref array representations))))
 
-(traverse-representations (subscripts (list (canonical-range 0 2)))
-  (print subscripts))
-
-(row-major-setup (list (canonical-range 0 2)) (lambda ()))
-
 (defmethod (setf slice) ((value array) (array array) &rest slices)
   (let ((representations (canonical-representations (array-dimensions array)
                                                     slices)))

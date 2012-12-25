@@ -12,7 +12,7 @@
 (defsuite representation-suite (slice-suite))
 
 (deffixture representation-suite (@body)
-  (let ((vec10 (vector 0 1 2 3 4 5 6 7 8 9)))
+  (let ((vec10 #(0 1 2 3 4 5 6 7 8 9)))
     @body))
 
 (deftest test-representation (representation-suite)
@@ -35,3 +35,19 @@
   (assert-equalp #(3 4 7) (slice vec10 #*0001100100))
   (assert-condition error (slice vec10 #*00)) ; too short
   )
+
+(defsuite array-suite (slice-suite))
+
+(deffixture array-suite (@body)
+  (let ((arr35 #2A((0 1 2 3 4)
+                   (5 6 7 8 9)
+                   (10 11 12 13 14))))
+    @body))
+
+(deftest array-slices (array-suite)
+  (assert-equalp #(0 5 10) (slice arr35 t 0))
+  (assert-equalp #2A((0) (5) (10)) (slice arr35 t (cons 0 1)))
+  (assert-equalp #2A((1 4)
+                     (6 9)
+                     (11 14))
+    (slice arr35 #(0 1 2) #(1 -1))))

@@ -169,6 +169,9 @@ is called, resetting and calling CARRY when it reaches the end of its range."
                               (save (aref vector position))))))))
 
 (defun row-major-setup (representations terminator)
+  "Return SUBSCRIPTS (a list) and ITERATOR (a closure, no arguments) that
+increments the contents of SUBSCRIPTS.  TERMINATOR is called when all
+subscripts have been visited."
   (let ((iterator terminator)
         (subscripts (mapcar #'representation-initial-value representations)))
     (loop for r in representations
@@ -187,9 +190,11 @@ is called, resetting and calling CARRY when it reaches the end of its range."
                                      &key index
                                           (setup 'row-major-setup))
                                     &body body)
-  "A macro for traversing representations.  Provides SUBSCRIPTS for BODY,
-using the given SETUP function.  When INDEX is given, it increases with each
-iteration, starting from 0."
+  "A macro for traversing representations.  Loops over all possible subscripts
+in REPRESENTAITONS, making them available in SUBSCRIPS during the execution of
+BODY.  The iterator is constructed using the function SETUP (see for example
+ROW-MAJOR-SETUP).  When INDEX is given, a variable with that name is provided,
+containing an index that counts iterations."
   (with-unique-names (block-name next)
     `(block ,block-name
        (let+ (((&values ,subscripts ,next)

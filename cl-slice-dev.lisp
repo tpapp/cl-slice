@@ -80,8 +80,7 @@ is a valid array index)."
   (assert (typep index 'array-index))
   index)
 
-(defstruct (canonical-range
-            (:constructor canonical-range% (start end)))
+(defstruct canonical-range
   "Canonical representation of a contiguous set of array indices from
 START (inclusive) to END (exclusive)."
   (start nil :type array-index)
@@ -93,10 +92,9 @@ START (inclusive) to END (exclusive)."
   (assert (and (typep start 'array-index)
                (typep end 'array-index)
                (< start end)))
-  (canonical-range% start end))
+  (make-canonical-range :start start :end end))
 
-(defstruct (canonical-sequence
-            (:constructor canonical-sequence% (vector)))
+(defstruct canonical-sequence
   "Canonical representation of a sequence of array indexes."
   (vector nil :type (simple-array array-index (*))))
 
@@ -109,7 +107,7 @@ preferred for efficiency, otherwise they are coerced."
                  (every (lambda (index)
                           (typep index 'array-index))
                         vector)))
-    (canonical-sequence% vector)))
+    (make-canonical-sequence :vector vector)))
 
 (defgeneric axis-dimension (axis)
   (:documentation "Return the dimension of axis.  Needs to be defined for

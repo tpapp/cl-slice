@@ -1,0 +1,102 @@
+* Array slices for Common Lisp
+
+This library provides the following:
+
+1. A user interface for taking slices (elements selected by the Cartesian product of vectors of subscripts for each axis) of array-like objects.  The most important function is =slice=.  Unless you want to define a method for this (besides what is already implemented), this is pretty much all you need from this library.  See the next section for a tutorial.
+
+2. An extensible DSL for selecting a subset of valid subscripts.  This is useful if, for example, you want to resolve column names in a data frame in your implementation of =slice=.
+
+3. A set of utility functions for traversing slices in array-like objects.
+
+* User interface
+
+The most frequently used form is
+#+BEGIN_SRC lisp
+(slice object slice1 slice2 ...)
+#+END_SRC
+Each slice selects a subset of subscripts along the corresponding axis.  The library supports the following slice specifications:
+
+- a nonnegative integer selects the corresponding index, while a negative integer selects an index counting backwards from the last index:
+  #+BEGIN_SRC lisp
+  (slice #(0 1 2 3) 1)                  ; => 1  
+  (slice #(0 1 2 3) -2)                 ; => 2    
+  #+END_SRC
+  Each integer slice /drops/ the dimension: vectors become atoms, matrices become vectors, etc.
+
+- =(cons start end)= selects integers $i: \text{start} \leq i < \text{end}$.  When =end= is =nil=, the last index is included (cf. =subseq=).  Each boundary is resolved according to the other rules if applicable, so you can use negative integers:
+  #+BEGIN_SRC lisp
+  (slice #(0 1 2 3) (cons 1 3))         ; => #(1 2)
+  (slice #(0 1 2 3) (cons 1 -1))        ; => #(1 2)
+  #+END_SRC
+  However, =(cons start end)= is /invalid unless/ $\text{start} < \text{end}$, so you can't use
+  #+BEGIN_SRC lisp
+  (slice #(0 1 2 3) (cons 2 2))         ; ERROR
+  #+END_SRC
+
+- =t= selects all subscripts:
+  #+BEGIN_SRC lisp
+  (slice #2A((0 1 2)
+             (3 4 5))
+         t 1)                           ; => #(1 4)
+  #+END_SRC
+
+- vectors concatenate selections (except for bit vectors):
+  #+BEGIN_SRC lisp
+  (slice #(0 1 2 3 4 5 6 7 8 9)
+          (vector (cons 1 3) 6 (cons -2 -1)))
+                                        ; => #(1 2 3 6 8 9)
+  (slice #(0 1 2) #(2 2 1 0 0))         ; => #(2 2 1 0 0)
+  #+END_SRC
+
+- bit vectors can be used as a mask:
+  #+BEGIN_SRC lisp
+  (slice #(0 1 2 3 4) #*00110)          ; => #(2 3)
+  #+END_SRC
+
+This is pretty much the core functionality --- the semantics can be extended, see the next section.  The following extensions are provided by the library.
+
+- =including= is convenient if you want the slice to include the end of the range:
+#+BEGIN_SRC lisp
+(slice #(0 1 2 3) (including 1 2))     ; => #(1 2), cf (slice ... (cons 1 3))
+#+END_SRC
+
+- =nodrop= is useful if you don't want to drop dimensions:
+  #+BEGIN_SRC lisp
+  (slice #(0 1 2 3) (nodrop 2))          ; => #(2), cf (slice ... (cons 2 3))
+  #+END_SRC
+
+- =head= and =tail= do the obvious:
+  #+BEGIN_SRC lisp
+  (slice #(0 1 2 3) (head 2))            ; => #(0 1)
+  (slice #(0 1 2 3) (tail 2))            ; => #(2 3)
+  #+END_SRC
+
+All of these are trivial to implement --- if there is something you are missing, you can easily extend =slice=.  You may also want to submit a patch!
+
+* Slice semantics
+
+Arguments of =slice= (apart from the first one) are meant to be resolved using =canonical-representation=, in the =cl-slice-dev= package.  If you want to extend =slice=, you should define methods for =canonical-representation=.  See the documentation for details, here I provide a simple example that extends the semantics with ordinal numbers.
+
+#+BEGIN_SRC lisp
+(defmacro define-ordinal-slice (number)
+  (check-type number (integer 0))
+  `(defmethod cl-slice-dev:canonical-representation
+       ((axis integer) (slice (eql ',(intern (format nil "~:@(~:r~)" number)))))
+     (assert (< ,number axis))
+     (cl-slice-dev:canonical-singleton ,number)))
+
+(define-ordinal-slice 1)
+(define-ordinal-slice 2)
+(define-ordinal-slice 3)
+
+(slice #(0 1 2 3 4 5) (cons 'first 'third)) ; => #(1 2)
+#+END_SRC
+
+Note the following:
+1. The value returned by =canonical-representation= needs to be constructed using =canonical-singleton=, =canonical-range=, or =canonical-sequence=.  You should not use the internal representation directly as it is subject to change.
+2. You can assume that =axis= is an integer: this is the default.  An object may define a more complex mapping (such as, for example, named rows & columns), but unless a method specialized to that is found, =canonical-representation= will just query its dimension (with =axis-dimension=) and try to find a method that works on integers.
+3. You need to make sure that the subscript is valid, hence the assertion.
+
+* Traversing slices
+
+** TODO write this

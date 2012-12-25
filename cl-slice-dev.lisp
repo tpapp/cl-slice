@@ -3,12 +3,14 @@
 (defpackage #:cl-slice-dev
   (:use #:cl #:alexandria #:anaphora #:let-plus)
   (:export
+   ;; resolving slices into canonical representations
+   #:canonical-representation
+   #:canonical-representations
    #:canonical-singleton
    #:canonical-range
    #:canonical-sequence
    #:axis-dimension
-   #:canonical-representation
-   #:canonical-representations
+   ;; traversing slices
    #:all-singleton-representations?
    #:representation-dimensions
    #:row-major-setup
@@ -18,46 +20,20 @@
 
 ;;; resolving slices into canonical representations
 
-(defun canonical-singleton (index)
-  "Create a canonical representation of a singleton index."
-  (assert (typep index 'array-index))
-  index)
-
-(defstruct (canonical-range
-            (:constructor canonical-range% (start end)))
-  "Canonical representation of a contiguous set of array indices from
-START (inclusive) to END (exclusive)."
-  (start nil :type array-index)
-  (end nil :type array-index))
-
-(defun canonical-range (start end)
-  "Create a canonical representation of a contiguous set of array indices from
-START (inclusive) to END (exclusive)."
-  (assert (and (typep start 'array-index)
-               (typep end 'array-index)
-               (< start end)))
-  (canonical-range% start end))
-
-(defstruct (canonical-sequence
-            (:constructor canonical-sequence% (vector)))
-  "Canonical representation of a sequence of array indexes."
-  (vector nil :type (simple-array array-index (*))))
-
-(defun canonical-sequence (sequence)
-  "Create a canonical representation of array indexes from sequence."
-  (let ((vector (coerce sequence '(simple-array array-index (*)))))
-    (assert (and (plusp (length vector))
-                 (every (lambda (index)
-                          (typep index 'array-index))
-                        vector)))
-    (canonical-sequence% vector)))
-
-(defgeneric axis-dimension (axis)
-  (:documentation "Return the dimension of axis."))
-
 (defgeneric canonical-representation (axis slice)
   (:documentation "Canonical representation of SLICE, given information in
-AXIS.  The default methods just use dimensions as AXIS.")
+AXIS.  The default methods just use dimensions as AXIS.
+
+Each slice needs to be resolved into a canonical representation, which is
+either a singleton, a range, or a sequence of subscripts.  They should only be
+constructed with the corresponding CANONICAL-SINGLETION, CANONICAL-RANGE and
+CANONICAL-SEQUENCE functions.
+
+CANONICAL-REPRESENTATION needs to ensure that the represented subscripts are
+valid for the axis.
+
+Unless a specialized method is found, the dimension of the axis is queried
+with AXIS-DIMENSION and resolution is attempted using the latter.")
   (:method (axis slice)
     (canonical-representation (axis-dimension axis) slice))
   (:method ((axis integer) (slice null))
@@ -97,6 +73,47 @@ AXIS.  The default methods just use dimensions as AXIS.")
 AXES, checking for matching length."
   (assert (length= axes slices))
   (mapcar #'canonical-representation axes slices))
+
+(defun canonical-singleton (index)
+  "Canonical representation of a singleton index (a nonnegative integer, which
+is a valid array index)."
+  (assert (typep index 'array-index))
+  index)
+
+(defstruct (canonical-range
+            (:constructor canonical-range% (start end)))
+  "Canonical representation of a contiguous set of array indices from
+START (inclusive) to END (exclusive)."
+  (start nil :type array-index)
+  (end nil :type array-index))
+
+(defun canonical-range (start end)
+  "Canonical representation of a contiguous set of array indices from
+START (inclusive) to END (exclusive)."
+  (assert (and (typep start 'array-index)
+               (typep end 'array-index)
+               (< start end)))
+  (canonical-range% start end))
+
+(defstruct (canonical-sequence
+            (:constructor canonical-sequence% (vector)))
+  "Canonical representation of a sequence of array indexes."
+  (vector nil :type (simple-array array-index (*))))
+
+(defun canonical-sequence (sequence)
+  "Canonical representation of array indexes from sequence.  May share
+structure.  Vectors of the upgraded type of (SIMPLE-ARRAY ARRAY-INDEX (*)) are
+preferred for efficiency, otherwise they are coerced."
+  (let ((vector (coerce sequence '(simple-array array-index (*)))))
+    (assert (and (plusp (length vector))
+                 (every (lambda (index)
+                          (typep index 'array-index))
+                        vector)))
+    (canonical-sequence% vector)))
+
+(defgeneric axis-dimension (axis)
+  (:documentation "Return the dimension of axis.  Needs to be defined for
+non-integer axes."))
 
 ;;; walking subscripts
 

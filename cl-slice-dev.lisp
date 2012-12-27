@@ -20,60 +20,6 @@
 
 ;;; resolving slices into canonical representations
 
-(defgeneric canonical-representation (axis slice)
-  (:documentation "Canonical representation of SLICE, given information in
-AXIS.  The default methods just use dimensions as AXIS.
-
-Each slice needs to be resolved into a canonical representation, which is
-either a singleton, a range, or a sequence of subscripts.  They should only be
-constructed with the corresponding CANONICAL-SINGLETION, CANONICAL-RANGE and
-CANONICAL-SEQUENCE functions.
-
-CANONICAL-REPRESENTATION needs to ensure that the represented subscripts are
-valid for the axis.
-
-Unless a specialized method is found, the dimension of the axis is queried
-with AXIS-DIMENSION and resolution is attempted using the latter.")
-  (:method (axis slice)
-    (canonical-representation (axis-dimension axis) slice))
-  (:method ((axis integer) (slice null))
-    (canonical-singleton axis))
-  (:method ((axis integer) (slice integer))
-    (canonical-singleton
-     (if (minusp slice)
-         (aprog1 (+ axis slice)
-           (assert (<= 0 it)))
-         (aprog1 slice
-           (assert (< slice axis))))))
-  (:method (axis (slice cons))
-    (let+ (((start . end) slice)
-           (start (canonical-representation axis start))
-           (end (canonical-representation axis end)))
-      (canonical-range start end)))
-  (:method (axis (slice vector))
-    (let+ (subscripts
-           ((&flet collect (value)
-              (push value subscripts))))
-      (loop for s across slice
-            do (aetypecase (canonical-representation axis s)
-                 (integer (collect it))
-                 (cons (loop for index from (car it) below (cdr it)
-                             do (collect index)))
-                 (vector (map 'nil #'collect it))))
-      (canonical-sequence (nreverse subscripts))))
-  (:method ((axis integer) (slice (eql t)))
-    (canonical-range 0 axis))
-  (:method (axis (slice bit-vector))
-    (canonical-sequence (loop for bit across slice
-                              for index from 0
-                              when (plusp bit) collect index))))
-
-(defun canonical-representations (axes slices)
-  "Return the canonical representations of SLICES given the corresponding
-AXES, checking for matching length."
-  (assert (length= axes slices))
-  (mapcar #'canonical-representation axes slices))
-
 (defun canonical-singleton (index)
   "Canonical representation of a singleton index (a nonnegative integer, which
 is a valid array index)."
@@ -112,6 +58,67 @@ preferred for efficiency, otherwise they are coerced."
 (defgeneric axis-dimension (axis)
   (:documentation "Return the dimension of axis.  Needs to be defined for
 non-integer axes."))
+
+(defgeneric canonical-representation (axis slice)
+  (:documentation "Canonical representation of SLICE, given information in
+AXIS.  The default methods just use dimensions as AXIS.
+
+Each slice needs to be resolved into a canonical representation, which is
+either a singleton, a range, or a sequence of subscripts.  They should only be
+constructed with the corresponding CANONICAL-SINGLETION, CANONICAL-RANGE and
+CANONICAL-SEQUENCE functions.
+
+CANONICAL-REPRESENTATION needs to ensure that the represented subscripts are
+valid for the axis.
+
+Unless a specialized method is found, the dimension of the axis is queried
+with AXIS-DIMENSION and resolution is attempted using the latter.")
+  ;; fallback: try to get dimension and proceed based on that
+  (:method (axis slice)
+    (canonical-representation (axis-dimension axis) slice))
+  ;; canonical representations resolve to themselves QUESTION unchecked?
+  (:method (axis (canonical-range canonical-range))
+    canonical-range)
+  (:method (axis (canonical-sequence canonical-sequence))
+    canonical-sequence)
+  ;; DSL for slices
+  (:method ((axis integer) (slice null))
+    (canonical-singleton axis))
+  (:method ((axis integer) (slice integer))
+    (canonical-singleton
+     (if (minusp slice)
+         (aprog1 (+ axis slice)
+           (assert (<= 0 it)))
+         (aprog1 slice
+           (assert (< slice axis))))))
+  (:method (axis (slice cons))
+    (let+ (((start . end) slice)
+           (start (canonical-representation axis start))
+           (end (canonical-representation axis end)))
+      (canonical-range start end)))
+  (:method (axis (slice vector))
+    (let+ (subscripts
+           ((&flet collect (value)
+              (push value subscripts))))
+      (loop for s across slice
+            do (aetypecase (canonical-representation axis s)
+                 (integer (collect it))
+                 (cons (loop for index from (car it) below (cdr it)
+                             do (collect index)))
+                 (vector (map 'nil #'collect it))))
+      (canonical-sequence (nreverse subscripts))))
+  (:method ((axis integer) (slice (eql t)))
+    (canonical-range 0 axis))
+  (:method (axis (slice bit-vector))
+    (canonical-sequence (loop for bit across slice
+                              for index from 0
+                              when (plusp bit) collect index))))
+
+(defun canonical-representations (axes slices)
+  "Return the canonical representations of SLICES given the corresponding
+AXES, checking for matching length."
+  (assert (length= axes slices))
+  (mapcar #'canonical-representation axes slices))
 
 ;;; walking subscripts
 

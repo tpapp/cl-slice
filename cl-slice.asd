@@ -18,4 +18,4 @@
   :depends-on (#:cl-slice
                #:clunit)
   :serial t
-  :components ((:file "tests")))
+  :components ((:file "cl-slice-tests")))

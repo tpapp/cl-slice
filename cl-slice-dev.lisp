@@ -4,12 +4,12 @@
   (:use #:cl #:alexandria #:anaphora #:let-plus)
   (:export
    ;; resolving slices into canonical representations
-   #:canonical-representation
-   #:canonical-representations
    #:canonical-singleton
    #:canonical-range
    #:canonical-sequence
    #:axis-dimension
+   #:canonical-representation
+   #:canonical-representations
    ;; traversing slices
    #:all-singleton-representations?
    #:representation-dimensions

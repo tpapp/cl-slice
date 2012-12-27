@@ -7,7 +7,7 @@
 
 (defsuite slice-suite ())
 
-;; (run-suite 'representation-suite)
+;; (run-suite 'slice-suite :use-debugger t)
 
 (defsuite representation-suite (slice-suite))
 
@@ -61,3 +61,11 @@
   (assert-equalp #2A((5 6 7 8 9)) (slice arr35 (cons 1 2) t))
   (assert-equalp #(6 7 8) (slice arr35 1 (cons 1 -1)))
   (assert-equalp #2A((6 7 8)) (slice arr35 (cons 1 2) (cons 1 -1))))
+
+(deftest array-singleton-slices (array-suite)
+  (assert-equalp 7 (ref arr35 1 2))
+  (assert-equalp 12 (ref arr35 -1 2))
+  (assert-condition error (ref arr35 t t))
+  (let ((a (make-array '(1 3) :initial-contents '((2 3 5)))))
+    (setf (ref a 0 1) 7)
+    (assert-equalp #2A((2 7 5)) a)))

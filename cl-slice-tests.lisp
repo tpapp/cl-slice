@@ -1,13 +1,16 @@
 ;;; -*- Mode:Lisp; Syntax:ANSI-Common-Lisp; Coding:utf-8 -*-
 
 (defpackage #:cl-slice-tests
-  (:use #:cl #:cl-slice #:clunit))
+  (:use #:cl #:cl-slice #:clunit)
+  (:export
+   #:run))
 
 (in-package #:cl-slice-tests)
 
 (defsuite slice-suite ())
 
-;; (run-suite 'slice-suite :use-debugger t)
+(defun run (&optional interactive?)
+  (run-suite 'slice-suite :use-debugger interactive?))
 
 (defsuite representation-suite (slice-suite))
 

@@ -89,6 +89,18 @@
       (setf (apply #'aref array subscripts)
             (row-major-aref value index)))))
 
+(defmethod ref ((array array) &rest subscripts)
+  (let ((representations (canonical-representations (array-dimensions array)
+                                                   subscripts)))
+    (assert (all-singleton-representations? representations))
+    (apply #'aref array representations)))
+
+(defmethod (setf ref) (value (array array) &rest subscripts)
+  (let ((representations (canonical-representations (array-dimensions array)
+                                                   subscripts)))
+    (assert (all-singleton-representations? representations))
+    (setf (apply #'aref array representations) value)))
+
 ;;; implementation for lists
 
 (defmethod slice ((list list) &rest slices)

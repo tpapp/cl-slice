@@ -11,6 +11,7 @@
    #:canonical-representation
    #:canonical-representations
    ;; traversing slices
+   #:singleton-representation?
    #:all-singleton-representations?
    #:representation-dimensions
    #:row-major-setup
@@ -122,9 +123,13 @@ AXES, checking for matching length."
 
 ;;; walking subscripts
 
+(defun singleton-representation? (representation)
+  "Test if a canonical REPRESENTATION is a singleton."
+  (integerp representation))
+
 (defun all-singleton-representations? (representations)
   "Test if all canonical representations are singletons."
-  (every #'integerp representations))
+  (every #'singleton-representation? representations))
 
 (defun representation-dimension (representation)
   "Return the dimension of a canonical-representation, or NIL for singleton

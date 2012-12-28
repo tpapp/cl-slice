@@ -11,6 +11,7 @@ This library provides the following:
 
 3. A set of utility functions for traversing slices in array-like objects.
 
+
 * User interface
 
 The most frequently used form is
@@ -78,6 +79,7 @@ All of these are trivial to implement --- if there is something you are missing,
 
 =ref= is a version of slice that always returns a single element, so it can only be used with singleton slices.
 
+
 * Slice semantics
 
 Arguments of =slice= (apart from the first one) are meant to be resolved using =canonical-representation=, in the =cl-slice-dev= package.  If you want to extend =slice=, you should define methods for =canonical-representation=.  See the documentation for details, here I provide a simple example that extends the semantics with ordinal numbers.
@@ -102,6 +104,11 @@ Note the following:
 2. You can assume that =axis= is an integer: this is the default.  An object may define a more complex mapping (such as, for example, named rows & columns), but unless a method specialized to that is found, =canonical-representation= will just query its dimension (with =axis-dimension=) and try to find a method that works on integers.
 3. You need to make sure that the subscript is valid, hence the assertion.
 
+
 * Traversing slices
 
 ** TODO write this
+
+* Reporting bugs
+
+Please report bugs using the [[https://github.com/tpapp/cl-slice/issues][issue tracker]].

@@ -1,3 +1,6 @@
+| This library is experimental.  Your comments are very welcome. |
+
+
 * Array slices for Common Lisp
 
 This library provides the following:

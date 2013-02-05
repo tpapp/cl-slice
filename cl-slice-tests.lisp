@@ -1,7 +1,9 @@
 ;;; -*- Mode:Lisp; Syntax:ANSI-Common-Lisp; Coding:utf-8 -*-
 
 (defpackage #:cl-slice-tests
-  (:use #:cl #:cl-slice #:clunit)
+  (:use #:cl
+        #:cl-slice
+        #:clunit)
   (:export
    #:run))
 
@@ -72,3 +74,9 @@
   (let ((a (make-array '(1 3) :initial-contents '((2 3 5)))))
     (setf (ref a 0 1) 7)
     (assert-equalp #2A((2 7 5)) a)))
+
+(deftest mask-and-which-test (slice-suite)
+  (let ((v #(0 1 2 3 4 5)))
+    (assert-equalp #(0 2 4) (which #'evenp v))
+    (assert-equalp #*010101 (mask #'oddp v))
+    (assert-equalp #(0 2 4) (which #'plusp (mask #'evenp v)))))

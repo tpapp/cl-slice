@@ -10,7 +10,9 @@
    #:including
    #:nodrop
    #:head
-   #:tail))
+   #:tail
+   #:mask
+   #:which))
 
 (in-package #:cl-slice)
 
@@ -110,3 +112,26 @@
     (traverse-representations (subscripts representations)
       (push (nth (car subscripts) list) values))
     (nreverse values)))
+
+;;; masks
+
+(defgeneric mask (predicate sequence)
+  (:documentation "Map sequence into a simple-bit-vector, using 1 when PREDICATE yields true, 0 otherwise.")
+  (:method (predicate (sequence sequence))
+    (map 'bit-vector (lambda (element)
+                       (if (funcall predicate element)
+                           1
+                           0))
+         sequence)))
+
+(defgeneric which (predicate sequence)
+  (:documentation "Return an index of the positions in SEQUENCE which satisfy PREDICATE.")
+  (:method (predicate (sequence sequence))
+    (let ((index 0)
+          positions)
+      (map nil (lambda (element)
+                 (when (funcall predicate element)
+                   (push index positions))
+                 (incf index))
+           sequence)
+      (coerce (nreverse positions) '(simple-array fixnum (*))))))

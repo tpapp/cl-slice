@@ -8,6 +8,7 @@
    #:canonical-range
    #:canonical-sequence
    #:axis-dimension
+   #:slice-reserved-symbol?
    #:canonical-representation
    #:canonical-representations
    ;; traversing slices
@@ -60,22 +61,20 @@ preferred for efficiency, otherwise they are coerced."
   (:documentation "Return the dimension of axis.  Needs to be defined for
 non-integer axes."))
 
+(defun slice-reserved-symbol? (symbol)
+  "Test if SYMBOL has special semantics for SLICE."
+  (or (eq symbol t) (eq symbol nil)))
+
 (defgeneric canonical-representation (axis slice)
-  (:documentation "Canonical representation of SLICE, given information in
-AXIS.  The default methods just use dimensions as AXIS.
+  (:documentation "Canonical representation of SLICE, given information in AXIS.  The default methods just use dimensions as AXIS.
 
-Each slice needs to be resolved into a canonical representation, which is
-either a singleton, a range, or a sequence of subscripts.  They should only be
-constructed with the corresponding CANONICAL-SINGLETION, CANONICAL-RANGE and
-CANONICAL-SEQUENCE functions.
+Each slice needs to be resolved into a canonical representation, which is either a singleton, a range, or a sequence of subscripts.  They should only be constructed with the corresponding CANONICAL-SINGLETION, CANONICAL-RANGE and CANONICAL-SEQUENCE functions.
 
-CANONICAL-REPRESENTATION needs to ensure that the represented subscripts are
-valid for the axis.
+CANONICAL-REPRESENTATION needs to ensure that the represented subscripts are valid for the axis.
 
-Unless a specialized method is found, the dimension of the axis is queried
-with AXIS-DIMENSION and resolution is attempted using the latter.")
-  ;; fallback: try to get dimension and proceed based on that
+Unless a specialized method is found, the dimension of the axis is queried with AXIS-DIMENSION and resolution is attempted using the latter.  It recommended that methods that resolve symbols test them with SLICE-RESERVED-SYMBOL? and use CALL-NEXT-METHOD.")
   (:method (axis slice)
+    ;; fallback: try to get dimension and proceed based that
     (canonical-representation (axis-dimension axis) slice))
   ;; canonical representations resolve to themselves QUESTION unchecked?
   (:method (axis (canonical-range canonical-range))

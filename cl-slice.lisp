@@ -6,6 +6,7 @@
   (:use #:cl #:alexandria #:anaphora #:cl-slice-dev #:let-plus)
   (:export
    #:slice
+   #:aslice
    #:ref
    #:including
    #:nodrop
@@ -27,6 +28,11 @@
   (:documentation "Return the slice of OBJECT specified by SLICES."))
 
 (defgeneric (setf slice) (value object &rest slices))
+
+(defmacro aslice (object &rest subscripts)
+  "Anaphoric macro version of SLICE that binds the first argument to IT."
+  `(let ((it ,object))
+     (slice it ,subscripts)))
 
 ;;; some convenience forms
 

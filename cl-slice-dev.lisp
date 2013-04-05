@@ -96,10 +96,15 @@ Unless a specialized method is found, the dimension of the axis is queried with 
               (push value subscripts))))
       (loop for s across slice
             do (aetypecase (canonical-representation axis s)
-                 (integer (collect it))
-                 (cons (loop for index from (car it) below (cdr it)
-                             do (collect index)))
-                 (vector (map 'nil #'collect it))))
+                 (array-index
+                  (collect it))
+                 (canonical-range
+                  (loop for index
+                        from (canonical-range-start it)
+                        below (canonical-range-end it)
+                        do (collect index)))
+                 (canonical-sequence
+                  (map 'nil #'collect (canonical-sequence-vector it)))))
       (canonical-sequence (nreverse subscripts))))
   (:method ((axis integer) (slice (eql t)))
     (canonical-range 0 axis))

@@ -77,7 +77,6 @@
 ;;; implementation for arrays
 
 (defmethod slice ((array array) &rest slices)
-  (declare (optimize debug))
   (let* ((representations (canonical-representations (array-dimensions array)
                                                      slices))
          (dimensions (representation-dimensions representations)))

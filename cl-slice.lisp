@@ -91,10 +91,17 @@
 (defmethod (setf slice) ((value array) (array array) &rest slices)
   (let ((representations (canonical-representations (array-dimensions array)
                                                     slices)))
-    (assert (equalp (representation-dimensions representations) value))
+    (assert (equalp (representation-dimensions representations)
+                    (array-dimensions value)) () "Incompatible dimensions.")
     (traverse-representations (subscripts representations :index index)
       (setf (apply #'aref array subscripts)
             (row-major-aref value index)))))
+
+(defmethod (setf slice) (value (array array) &rest slices)
+  (let ((representations (canonical-representations (array-dimensions array)
+                                                    slices)))
+    (assert (all-singleton-representations? representations))
+    (setf (apply #'aref array representations) value)))
 
 (defmethod ref ((array array) &rest subscripts)
   (let ((representations (canonical-representations (array-dimensions array)

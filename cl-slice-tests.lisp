@@ -41,7 +41,12 @@
   (assert-condition error (slice vec10 #*00)) ; too short
   ;; vectors containing other forms
   (assert-equalp #(1 2 6 8)
-      (slice #(0 1 2 3 4 5 6 7 8 9) (vector (cons 1 3) 6 (cons -2 -1)))))
+      (slice #(0 1 2 3 4 5 6 7 8 9) (vector (cons 1 3) 6 (cons -2 -1))))
+  (assert-equalp #(1 2 6 8 9)
+      (slice #(0 1 2 3 4 5 6 7 8 9) (vector (cons 1 3) 6 (cons 8 10))))
+  ;; empty slice
+  (assert-equalp #(6 8)
+      (slice #(0 1 2 3 4 5 6 7 8 9) (vector (cons 0 0) 6 (cons -2 -1)))))
 
 (deftest test-convenience-forms (representation-suite)
   (assert-equalp #(3 4 5) (slice vec10 (including 3 5)))

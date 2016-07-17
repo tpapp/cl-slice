@@ -36,7 +36,7 @@
   "Canonical representation of a contiguous set of array indices from START (inclusive) to END (exclusive)."
   (assert (and (typep start 'array-index)
                (typep end 'array-index)
-               (< start end)))
+               (<= start end)))
   (make-canonical-range :start start :end end))
 
 (defstruct canonical-sequence
@@ -84,7 +84,7 @@ Unless a specialized method is found, the dimension of the axis is queried with 
          (aprog1 (+ axis slice)
            (assert (<= 0 it)))
          (aprog1 slice
-           (assert (< slice axis))))))
+           (assert (<= slice axis))))))
   (:method (axis (slice cons))
     (let+ (((start . end) slice)
            (start (canonical-representation axis start))

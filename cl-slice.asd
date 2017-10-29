@@ -2,7 +2,7 @@
   :description "DSL for array slices in Common Lisp."
   :version "0.1"
   :author "Tamas K Papp <tkpapp@gmail.com>"
-  :license "Boost Software License - Version 1.0"
+  :license "MIT"
   :depends-on (#:alexandria
                #:anaphora
                #:let-plus)
@@ -14,7 +14,7 @@
   :description "DSL for array slices in Common Lisp - unit tests."
   :version "0.1"
   :author "Tamas K Papp <tkpapp@gmail.com>"
-  :license "Boost Software License - Version 1.0"
+  :license "MIT"
   :depends-on (#:cl-slice
                #:clunit)
   :serial t

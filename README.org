@@ -1,6 +1,10 @@
 #+CAPTION: Project Status: Abandoned – Initial development has started, but there has not yet been a stable, usable release; the project has been abandoned and the author(s) do not intend on continuing development.
 [[http://www.repostatus.org/badges/latest/abandoned.svg]]
 
+This repository is *archived*. You may find an updated version of these
+libraries at https://github.com/Lisp-Stat/select
+
+
 * Array slices for Common Lisp
 
 This library provides the following:
